@@ -21,12 +21,18 @@ trap cleanup EXIT
 
 # Main script logic
 function main() {
+    echo "Installing dependencies..."
+    pip install -r requirements.txt
+    huggingface-cli login
+    wandb login
     echo "Training LLama3.2-instruct-3B ..."
     echo "Fetching dataset..."
     mkdir -p training_data
     wget --retry-connrefused --tries=3 --progress=bar -P training_data https://huggingface.co/datasets/Aeala/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V4.3_unfiltered_cleaned_split.json
     echo "Generating Training Data ..."
     python "$SCRIPT_DIR/eagle/ge_data/ge_data_all_llama3instruct.py"
+    echo "Saving Model ..."
+    python "$SCRIPT_DIR/eagle/save_model.py" 
     echo "Training ..."
     python "$SCRIPT_DIR/eagle/train/main.py" \
         --basepath "$SCRIPT_DIR/eagle/train/llama3.2-3b-instruct-local" 
