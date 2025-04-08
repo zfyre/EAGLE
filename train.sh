@@ -25,8 +25,11 @@ function main() {
     echo "Fetching dataset..."
     mkdir -p training_data
     wget --retry-connrefused --tries=3 --progress=bar -P training_data https://huggingface.co/datasets/Aeala/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V4.3_unfiltered_cleaned_split.json
-    echo "Training ..."
+    echo "Generating Training Data ..."
     python "$SCRIPT_DIR/eagle/ge_data/ge_data_all_llama3instruct.py"
+    echo "Training ..."
+    python "$SCRIPT_DIR/eagle/train/main.py" \
+        --basepath "$SCRIPT_DIR/eagle/train/llama3.2-3b-instruct-local" 
 
 }
 

@@ -17,7 +17,8 @@ from datasets import load_dataset
 from fastchat.model.model_adapter import get_conversation_template
 
 
-modelname="meta-llama/Llama-3.2-3B-Instruct"
+# modelname="meta-llama/Llama-3.2-3B-Instruct"
+modelname="unsloth/Llama-3.2-3B-Instruct"
 
 
 
@@ -187,7 +188,7 @@ def build_dataset_rank(
 tokenizer = AutoTokenizer.from_pretrained(modelname,use_fast=False)
 dataset = build_dataset_rank(tokenizer)
 
-model = AutoModelForCausalLM.from_pretrained(modelname,  device_map="auto",torch_dtype=torch.bfloat16)
+model = AutoModelForCausalLM.from_pretrained(modelname,  device_map="auto",torch_dtype=torch.float16)
 model.eval()
 
 @torch.no_grad()
