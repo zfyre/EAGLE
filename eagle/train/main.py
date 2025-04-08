@@ -1,7 +1,7 @@
 import argparse
 
 parser = argparse.ArgumentParser(description='sp')
-parser.add_argument('--basepath', type=str, default='/home/lyh/weights/hf/vicuna_v13/7B/')
+parser.add_argument('--basepath', type=str, default='llama3.2-3b-instruct-local')
 parser.add_argument('--configpath', type=str, default="config.json")
 parser.add_argument('--lr', type=float, default=3e-5)
 parser.add_argument('--bs', type=int, default=4)
@@ -68,7 +68,7 @@ from transformers import get_linear_schedule_with_warmup, AutoConfig
 if accelerator.is_main_process:
     import wandb
 
-    wandb.init(project="ess", entity="yuhui-li", config=train_config)
+    wandb.init(project="eagle", entity="zfyre-iit-roorkee", config=train_config)
 
 baseconfig = AutoConfig.from_pretrained(args.basepath)
 
@@ -77,17 +77,17 @@ head = torch.nn.Linear(baseconfig.hidden_size, baseconfig.vocab_size, bias=False
 try:
     with open(os.path.join(args.basepath, "model.safetensors.index.json"), "r") as f:
         index_json = json.loads(f.read())
-        head_path = index_json["weight_map"]["lm_head.weight"]
+        head_path = index_json["weight_map"]["model.embed_tokens.weight"]
     with safe_open(os.path.join(args.basepath, head_path),
                    framework="pt",
                    device="cpu") as f:
-        tensor_slice = f.get_slice("lm_head.weight")
+        tensor_slice = f.get_slice("model.embed_tokens.weight")
         vocab_size, hidden_dim = tensor_slice.get_shape()
         tensor = tensor_slice[:, :hidden_dim].float()
 except:
-    with open(os.path.join(args.basepath, "pytorch_model.bin.index.json"), "r") as f:
+    with open(os.path.join(args.basepath, "model.safetensors.index.json"), "r") as f:
         index_json = json.loads(f.read())
-        head_path = index_json["weight_map"]["lm_head.weight"]
+        head_path = index_json["weight_map"]["model.embed_tokens.weight"]
     weights = torch.load(os.path.join(args.basepath, head_path))
     tensor = weights["lm_head.weight"].float()
 

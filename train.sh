@@ -29,13 +29,13 @@ function main() {
     echo "Fetching dataset..."
     mkdir -p training_data
     wget --retry-connrefused --tries=3 --progress=bar -P training_data https://huggingface.co/datasets/Aeala/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V4.3_unfiltered_cleaned_split.json
+    cd "$$SCRIPT_DIR"
     echo "Generating Training Data ..."
-    python "$SCRIPT_DIR/eagle/ge_data/ge_data_all_llama3instruct.py"
+    python "eagle/ge_data/ge_data_all_llama3instruct.py"
     echo "Saving Model ..."
-    python "$SCRIPT_DIR/eagle/save_model.py" 
+    python "eagle/save_model.py" 
     echo "Training ..."
-    python "$SCRIPT_DIR/eagle/train/main.py" \
-        --basepath "$SCRIPT_DIR/eagle/train/llama3.2-3b-instruct-local" 
+    accelerate launch -m --mixed_precision=bf16 eagle.train.main --tmpdir outdir0/1/ --cpdir eagle/llama3.2-3b-instruct-local/ --configpath eagle/train/llama_3-2_instruct_3B_config.json
 
 }
 
