@@ -187,7 +187,7 @@ def build_dataset_rank(
 tokenizer = AutoTokenizer.from_pretrained(modelname,use_fast=False)
 dataset = build_dataset_rank(tokenizer)
 
-model = AutoModelForCausalLM.from_pretrained(modelname,  device_map="auto",torch_dtype=torch.float16)
+model = AutoModelForCausalLM.from_pretrained(modelname,  device_map="auto",torch_dtype=torch.bfloat16)
 model.eval()
 
 @torch.no_grad()
