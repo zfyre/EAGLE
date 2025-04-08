@@ -24,7 +24,7 @@ function main() {
     echo "Training LLama3.2-instruct-3B ..."
     echo "Fetching dataset..."
     mkdir -p training_data
-    # wget --retry-connrefused --tries=3 --progress=bar -P training_data https://huggingface.co/datasets/Aeala/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V4.3_unfiltered_cleaned_split.json
+    wget --retry-connrefused --tries=3 --progress=bar -P training_data https://huggingface.co/datasets/Aeala/ShareGPT_Vicuna_unfiltered/resolve/main/ShareGPT_V4.3_unfiltered_cleaned_split.json
     echo "Training ..."
     python "$SCRIPT_DIR/eagle/ge_data/ge_data_all_llama3instruct.py"
 
