@@ -4,12 +4,21 @@ parser = argparse.ArgumentParser(description='sp')
 parser.add_argument('--basepath', type=str, default='llama3.2-3b-instruct-local')
 parser.add_argument('--configpath', type=str, default="config.json")
 parser.add_argument('--lr', type=float, default=3e-5)
-parser.add_argument('--bs', type=int, default=4)
+parser.add_argument('--bs', type=int, default=1)
 parser.add_argument('--gradient-accumulation-steps', type=int, default=1)
 parser.add_argument('--tmpdir', type=str, default='0')
 parser.add_argument('--outdir', type=str, default='0')
 parser.add_argument('--cpdir', type=str, default='0')
 args = parser.parse_args()
+
+
+def get_grad_norm(model):
+    total_norm = 0.0
+    for p in model.parameters():
+        if p.grad is not None:
+            param_norm = p.grad.data.norm(2)  # L2 norm
+            total_norm += param_norm.item() ** 2
+    return total_norm ** 0.5
 
 train_config = {
     "lr": args.lr,
@@ -320,6 +329,7 @@ if accelerator.is_main_process:
 
 config = EConfig.from_pretrained(train_config["config_path"])
 model = Model(config, load_emb=True, path=args.basepath)
+get_grad_norm(model)
 
 criterion = nn.SmoothL1Loss(reduction="none")
 optimizer = optim.AdamW(model.parameters(), lr=train_config["lr"], betas=(train_config["b1"], train_config["b2"]))
@@ -347,6 +357,7 @@ for epoch in range(num_epochs + 1):
     total = 0
     epoch_loss = 0
     num_batches = 0
+    grad_norms = []  # Store for plotting
     model.train()
     for batch_idx, data in enumerate(tqdm(train_loader)):
 
@@ -367,6 +378,10 @@ for epoch in range(num_epochs + 1):
             loss = train_config["v_w"] * vloss + train_config["p_w"] * ploss
             # loss.backward()
             accelerator.backward(loss)
+        
+            grad_norm = get_grad_norm(model)
+            grad_norms.append(grad_norm)
+            wandb.log({"train/grad_norm": grad_norm})
             accelerator.clip_grad_value_(model.parameters(), train_config["grad_clip"])
             optimizer.step()
             if is_warmup:
